@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="ng-app:looplereloaded" id="ng-app" ng-app="looplereloaded">
 <head>
 	<meta charset="UTF-8">
 	<title>LoopleTwo</title>
+	<base href="/">
+
+	<script src="js/vendor/angular.js"></script>
+	<script src="js/vendor/angular-route.js"></script>
+	<script src="js/vendor/jquery-2.1.1.js"></script>
+
+	<script src="js/application/app.js"></script>
+	<script src="js/application/services.js"></script>
+	<script src="js/application/filters.js"></script>
+	<script src="js/application/controllers-composer.js"></script>
+	<script src="js/application/controllers-application.js"></script>
+	<script src="js/application/directives.js"></script>
+
 </head>
 <body>
+	<nav id="nav-main">
+		<ul>
+			<li><a href="/">welcome</a></li>
+			<li><a href="/create-loops">compose loops</a></li>
+			<li><a href="/play-loops">live performance</a></li>
+		</ul>
+	</nav>
+	<div class="container" data-ng-view></div>
 	
 </body>
 </html>

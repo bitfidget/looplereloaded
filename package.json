@@ -1,0 +1,27 @@
+{
+  "name": "loopletwo",
+  "version": "0.0.0",
+  "description": "loople reloaded",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitfidget/looplereloaded.git"
+  },
+  "keywords": [
+    "music",
+    "sound",
+    "sequencer",
+    "angular.js",
+    "rails",
+    "ruby"
+  ],
+  "author": "Kriss Heimanis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bitfidget/looplereloaded/issues"
+  },
+  "homepage": "https://github.com/bitfidget/looplereloaded"
+}

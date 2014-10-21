@@ -44,23 +44,11 @@ angular.module('looplereloaded')
     var $modHeight;
     var $rowHeight;
 
-    // on load, stretch the grid to fill the window and break up all of the components to the right size - append new styles to head rather than directly to each dom element    
-
-    // $timeout(function() {
-    //     var $elemHeight = $($thisElem).height();
-    //     var $modHeight = $elemHeight / instrumentMods.length;
-
     var resize = function(rowHeight) {
         angular.forEach($modHeight, function(elem) {
             $(elem).height(rowHeight);
         })
     };
-
-    // })
-
-    // angular.forEach($($elem).find('.row-height'), function() {
-    //     debugger
-    // })
 
     return {
         restrict: 'A',
@@ -73,8 +61,6 @@ angular.module('looplereloaded')
                 $rowHeight = $('.row-height').height() / $modList.length;
                 resize($rowHeight);
             })
-
-
         }
     };
 }]);

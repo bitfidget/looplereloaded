@@ -1,25 +1,15 @@
 <!-- create directive that draws the grid at correct size, splits columns up at 64 places, then draws in the rows -->
-<div class="sound-grid" sound-grid>
+<div class="sound-grid" sound-grid ng-controller="GridController">
 	
-	<div class="grid-row row-height instrument-{{$index}}" ng-repeat="instrument in instruments">
+	<div class="grid-row row-height mod-{{$index}}" ng-repeat="mod in mods">
 
-    <div ng-hide="instrument.mods" class="instrument-title row-height">
-      {{instrument.instr}}
+    <div class="instrument-title row-height">
+      mod-{{$index}}
     </div>
-    <div ng-hide="instrument.mods" class="grid-column row-height column-width beat-{{$index}}" ng-repeat="beat in loop">
+    <div ng-hide="mod.mods" class="grid-column row-height column-width beat-{{$index}}" ng-repeat="beat in loop" ng-click="gridClick($index, parent.$index)">
       {{beat.id}}
+      {{beat.note}}
     </div>
-
-    <div ng-show="instrument.mods" mod-grid>
-      <div ng-repeat="mod in instrument.mods" class="mod-list mod-{{$index}}">
-        <div class="mod-title mod-height">
-          {{instrument.instr}}.{{mod.mod}}
-        </div>
-        <div class="grid-column mod-height column-width beat-{{$index}}" ng-repeat="beat in loop">
-          {{beat.id}}
-        </div>
-      </div>
-    </div>  
 
 	</div>
 

@@ -33,7 +33,7 @@ angular.module('looplereloaded', ['ngRoute'])
         return $delegate;
     });
 
-    $locationProvider.html5Mode(true);        
+    $locationProvider.html5Mode(true);   
 
   }
 ]);

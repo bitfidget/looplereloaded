@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     sass: {
       dist: {
         files: {
-          'css/soundgrid.css' : 'sass/soundgrid.scss'
+          'css/soundgrid.css' : 'scss/soundgrid.scss'
         }
       }
     },

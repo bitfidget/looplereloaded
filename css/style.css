@@ -1,0 +1,11 @@
+@media (max-width: 767px) {
+  @import url("general-mobile.css");
+}
+
+@media (max-width: 1024px) {
+  @import url("general-tablet.css");
+}
+
+@media (min-width: 1025px) {
+  @import url("general-screen.css");
+}

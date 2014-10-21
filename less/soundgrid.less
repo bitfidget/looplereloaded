@@ -1,0 +1,45 @@
+@colWidth: 0px;
+@rowHeight: 0px;
+
+
+body{
+  margin: 0;
+  padding: 0;
+}
+ul,li{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.container{
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.sound-grid{
+  position: fixed;
+  display: block;
+  background: #F60;
+}
+
+.row-height,
+.column-width{
+  display: block;
+}
+
+.column-width{
+  width: @colWidth;
+}
+
+.grid-column{
+  float: left;
+}
+
+.grid-title{
+  width: 100px;
+  background: #FFF;
+  float: left;
+}

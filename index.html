@@ -3,6 +3,26 @@
 <head>
 	<meta charset="UTF-8">
 	<title>LoopleTwo</title>
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sample sounds, loop them up, go nuts">
+  <meta name="author" content="Kriss Heimanis">
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/soundgrid.css">
+
+	<style type='text/css' id='grid-styles'>
+	.row-height{
+		height : 0px
+	}
+	.column-width{
+		width : 0px
+	}
+	</style>
+
 	<base href="/">
 
 	<script src="js/vendor/angular.js"></script>
@@ -18,13 +38,15 @@
 
 </head>
 <body>
-	<nav id="nav-main">
-		<ul>
-			<li><a href="/">welcome</a></li>
-			<li><a href="/create-loops">compose loops</a></li>
-			<li><a href="/play-loops">live performance</a></li>
-		</ul>
-	</nav>
+	<header>
+		<nav id="nav-main">
+			<ul>
+				<li><a href="/">welcome</a></li>
+				<li><a href="/create-loops">compose loops</a></li>
+				<li><a href="/play-loops">live performance</a></li>
+			</ul>
+		</nav>
+	</header>
 	<div class="container" data-ng-view></div>
 	
 </body>

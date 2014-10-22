@@ -7,7 +7,7 @@ var lookahead = 25.0;       // How frequently to call scheduling function (in mi
 var scheduleAheadTime = 0.1;    // How far ahead to schedule audio (sec) This is calculated from lookahead, and overlaps with next interval (in case the timer is late)
 var nextNoteTime = 0.0;     // when the next note is due.
 var noteResolution = 0;     // 0 == 16th, 1 == 8th, 2 == quarter note
-var noteLength = 0.05;      // length of "beep" (in seconds)
+var noteLength = 0.1;      // length of "beep" (in seconds)
 var canvas,                 // the canvas element
     canvasContext;          // canvasContext is the canvas' context 2D
 var last16thNoteDrawn = -1; // the last "box" we drew on the screen
@@ -15,7 +15,7 @@ var notesInQueue = [];      // the notes that have been put into the web audio, 
 var timerWorker = null;     // The Web Worker used to fire timer messages
 var bufferLoader;           // Kriss - for loading individual sounds
 var SOUNDS = [];           // Kriss - for passing off individual samples to the webkit looper
-
+var eighthNoteTime = (60 / tempo) / 2;
 
 
 
@@ -106,20 +106,33 @@ function scheduleNote( beatNumber, time ) {
     if ( (noteResolution==2) && (beatNumber%4))
         return; // we're not playing non-quarter 8th notes
 
+    source = audioContext.createBufferSource();
+    
+
 
 
     // create an oscillator
-    var osc = audioContext.createOscillator();
-    osc.connect( audioContext.destination );
-    if (beatNumber % 16 === 0)    // beat 0 == low pitch
-        osc.frequency.value = 880.0;
-    else if (beatNumber % 4 === 0 )    // quarter notes = medium pitch
-        osc.frequency.value = 440.0;
-    else                        // other 16th notes = high pitch
-        osc.frequency.value = 220.0;
+    // var osc = audioContext.createOscillator();
+    // osc.connect( audioContext.destination );
+    if (beatNumber % 16 === 0) {   // beat 0 == low pitch
+        source.buffer = SOUNDS[0];
+        // osc.frequency.value = 880.0;
+    } else if (beatNumber % 4 === 0 ) {   // quarter notes = medium pitch
+        source.buffer = SOUNDS[1];
+        // osc.frequency.value = 440.0;
+    } else {                 // other 16th notes = high pitch
+        source.buffer = SOUNDS[2];
+        //osc.frequency.value = 220.0;
+    }
+    if (beatNumber === 3) {
+        source.buffer = SOUNDS[5];
+    }
 
-    osc.start( time );
-    osc.stop( time + noteLength );
+    // osc.start( time );
+    // osc.stop( time + noteLength );
+    source.connect(audioContext.destination);
+    source.start(time);
+
 
 
 
@@ -217,6 +230,7 @@ function init() {
           '../sounds/Tom02.wav',
           '../sounds/OpenHat09.wav',
           '../sounds/Tom03.wav',
+          '../sounds/sncf.wav',
         ],
         finishedLoading
     );

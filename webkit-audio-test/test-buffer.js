@@ -55,7 +55,6 @@ function init() {
 
   console.log('loading');
 
-  // Fix up prefixing
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   context = new AudioContext();
 
@@ -78,76 +77,86 @@ function finishedLoading(bufferList) {
 
   console.log('loaded');
 
-  // Create two sources and play them both together.
-  // var source1 = context.createBufferSource();
-  // var source2 = context.createBufferSource();
-  // source1.buffer = bufferList[0];
-  // source2.buffer = bufferList[1];
-
-  // BUFFERS.kick = bufferList[0];
-  // BUFFERS.snare = bufferList[1];
-  // BUFFERS.hihat = bufferList[2];
-
   BUFFERS = bufferList;
-
-  // source1.connect(context.destination);
-  // source2.connect(context.destination);
-  // source1.start(0);
-  // source2.start(0);
 }
 
-var RhythmSample = {};
 
-RhythmSample.play = function() {
-  function playSound(buffer, time) {
-    var source = context.createBufferSource();
+var SampleLoop = {};
+SampleLoop.gainNode = null;
+
+
+SampleLoop.play = function() {
+
+  // introduce gain control
+  if (!context.createGain)
+    context.createGain = context.createGainNode;
+  this.gainNode = context.createGain();
+
+
+  function playSounds(buffer, time) {
+    source = context.createBufferSource();
     source.buffer = buffer;
     source.connect(context.destination);
-    if (!source.start)
-      source.start = source.noteOn;
     source.start(time);
   }
 
+  function playLoop() {
+    for (var bar = 0; bar < 1; bar++) {
+      var time = startTime + bar * 8 * eighthNoteTime;
+      
+      // Play the bass (kick) drum on beats 1, 5
+      playSounds(kick, time);
+      playSounds(kick, time + 4 * eighthNoteTime);
+
+      // Play the snare drum on beats 3, 7
+      playSounds(snare, time + 2 * eighthNoteTime);
+      playSounds(snare, time + 6 * eighthNoteTime);
+
+      // add toms
+      playSounds(tom_1, time + 5 * eighthNoteTime);
+      playSounds(tom_1, time + 7 * eighthNoteTime);
+      playSounds(tom_2, time + 6 * eighthNoteTime);
+
+      // Play the hi-hat every eighth note.
+      for (var i = 0; i < 8; ++i) {
+        playSounds(hihat, time + i * eighthNoteTime);
+      }
+    }
+  }
+
+  // load the sounds we want
   var kick = BUFFERS[0];
   var snare = BUFFERS[1];
   var hihat = BUFFERS[2];
   var tom_1 = BUFFERS[3];
   var tom_2 = BUFFERS[4];
 
-  // We'll start playing the rhythm 100 milliseconds from "now"
+  // timing variables
   var startTime = context.currentTime;
   var tempo = 120; // BPM (beats per minute)
   var eighthNoteTime = (60 / tempo) / 2;
-
-  // Play 4 bars of the following:
-  for (var bar = 0; bar < 4; bar++) {
-    var time = startTime + bar * 8 * eighthNoteTime;
-    
-    // Play the bass (kick) drum on beats 1, 5
-    playSound(kick, time);
-    playSound(kick, time + 4 * eighthNoteTime);
-
-    // Play the snare drum on beats 3, 7
-    playSound(snare, time + 2 * eighthNoteTime);
-    playSound(snare, time + 6 * eighthNoteTime);
-
-    // add toms
-    playSound(tom_1, time + 5 * eighthNoteTime);
-    playSound(tom_2, time + 6 * eighthNoteTime);
-
-    // Play the hi-hat every eighth note.
-    for (var i = 0; i < 8; ++i) {
-      playSound(hihat, time + i * eighthNoteTime);
-    }
-  }
 };
 
-VolumeSample.gainNode = null;
+SampleLoop.stop = function() {
+  if (!this.source.stop)
+    this.source.stop = source.noteOff;
+  this.source.stop(0);
+};
+
+SampleLoop.toggle = function() {
+  this.playing ? this.stop() : this.play();
+  this.playing = !this.playing;
+};
+
+
+
+
 
 VolumeSample.play = function() {
   if (!context.createGain)
     context.createGain = context.createGainNode;
   this.gainNode = context.createGain();
+
   var source = context.createBufferSource();
   source.buffer = BUFFERS.techno;
 

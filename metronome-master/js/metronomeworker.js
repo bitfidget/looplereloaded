@@ -1,4 +1,4 @@
-// massif thanks to Chris Wilson/HTML5ROCKS/https://github.com/cwilso/metronome/
+// massif thanks to Chris Wilson / HTML5ROCKS / https://github.com/cwilso/metronome/ / http://www.html5rocks.com/en/tutorials/audio/scheduling/
 
 var timerID = null;
 var interval = 100;

@@ -1,5 +1,6 @@
 var audioContext = null;
 var isPlaying = false;      // Are we currently playing?
+var isPaused = false;
 var startTime;              // The start time of the entire sequence.
 var current16thNote;        // What note is currently last scheduled?
 var tempo = 120.0;          // tempo (in beats per minute)
@@ -19,7 +20,7 @@ var eighthNoteTime = (60 / tempo) / 2;
 
 
 
-
+// set up the audio file loaders
 
 function BufferLoader(context, urlList, callback) {
   this.context = audioContext;
@@ -47,7 +48,7 @@ BufferLoader.prototype.loadBuffer = function(url, index) {
           return;
         }
         loader.bufferList[index] = buffer;
-        if (++loader.loadCount == loader.urlList.length)
+        if (++loader.loadCount === loader.urlList.length)
           loader.onload(loader.bufferList);
       },
       function(error) {
@@ -70,12 +71,8 @@ BufferLoader.prototype.load = function() {
 
 
 
+// the requestAnimationFrame API, with a setTimeout fallback
 
-
-
-
-
-// First, let's shim the requestAnimationFrame API, with a setTimeout fallback
 window.requestAnimFrame = (function() {
     return  window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -101,14 +98,12 @@ function scheduleNote( beatNumber, time ) {
     // push the note on the queue, even if we're not playing.
     notesInQueue.push( { note: beatNumber, time: time } );
 
-    if ( (noteResolution==1) && (beatNumber%2))
+    if ( (noteResolution === 1) && (beatNumber % 2))
         return; // we're not playing non-8th 16th notes
-    if ( (noteResolution==2) && (beatNumber%4))
+    if ( (noteResolution === 2) && (beatNumber % 4))
         return; // we're not playing non-quarter 8th notes
 
     source = audioContext.createBufferSource();
-    
-
 
 
     // create an oscillator
@@ -132,12 +127,8 @@ function scheduleNote( beatNumber, time ) {
     // osc.stop( time + noteLength );
     source.connect(audioContext.destination);
     source.start(time);
-
-
-
-
-
 }
+
 
 function scheduler() {
     // while there are notes that will need to play before the next interval, schedule them and advance the pointer.
@@ -147,8 +138,10 @@ function scheduler() {
     }
 }
 
+
 function play() {
     isPlaying = !isPlaying;
+    isPaused = false;
 
     if (isPlaying) { // start playing
         current16thNote = 0;
@@ -159,7 +152,24 @@ function play() {
         timerWorker.postMessage("stop");
         return "play";
     }
+    
 }
+
+
+function pause() {
+    isPaused = !isPaused;
+
+    if (!isPaused) { // start playing
+        //current16thNote = 0;
+        nextNoteTime = audioContext.currentTime;
+        timerWorker.postMessage("start");
+        return "pause";
+    } else {
+        timerWorker.postMessage("stop");
+        return "resume";
+    }
+}
+
 
 function resetCanvas (e) {
     // resize the canvas - but remember - this clears the canvas too.
@@ -170,9 +180,15 @@ function resetCanvas (e) {
     window.scrollTo(0,0); 
 }
 
+
 function draw() {
     var currentNote = last16thNoteDrawn;
     var currentTime = audioContext.currentTime;
+
+    console.log(currentNote);
+
+    $('.blink').removeClass('blink');
+    $('#sq-' + currentNote).addClass('blink');
 
     while (notesInQueue.length && notesInQueue[0].time < currentTime) {
         currentNote = notesInQueue[0].note;
@@ -180,13 +196,13 @@ function draw() {
     }
 
     // We only need to draw if the note has moved.
-    if (last16thNoteDrawn != currentNote) {
+    if (last16thNoteDrawn !== currentNote) {
         var x = Math.floor( canvas.width / 18 );
         canvasContext.clearRect(0,0,canvas.width, canvas.height); 
-        for (var i=0; i<16; i++) {
+        for (var i = 0; i < 16; i++) {
             canvasContext.fillStyle = ( currentNote === i ) ? 
-                ((currentNote%4 === 0)?"red":"blue") : "black";
-            canvasContext.fillRect( x * (i+1), x, x/2, x/2 );
+                ((currentNote % 4 === 0)?"red":"blue") : "black";
+            canvasContext.fillRect( x * (i + 1), x, x / 2, x / 2 );
         }
         last16thNoteDrawn = currentNote;
     }
@@ -195,10 +211,12 @@ function draw() {
     requestAnimFrame(draw);
 }
 
+
 function finishedLoading(bufferList) {
     console.log('loaded');
     SOUNDS = bufferList;
 }
+
 
 function init() {
 
@@ -250,9 +268,9 @@ function init() {
         if (e.data === "tick") {
             console.log("tick!");
             scheduler();
-        }
-        else
+        } else {
             console.log("message: " + e.data);
+        }
     };
     timerWorker.postMessage({"interval":lookahead});
 }

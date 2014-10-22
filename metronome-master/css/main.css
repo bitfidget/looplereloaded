@@ -11,7 +11,7 @@
 	
 }
 
-.play {
+.play, .pause {
 	-moz-box-shadow:inset 0px 20px 26px 0px #b6cde3;
 	-webkit-box-shadow:inset 0px 20px 26px 0px #b6cde3;
 	box-shadow:inset 0px 20px 26px 0px #b6cde3;
@@ -29,13 +29,15 @@
 	text-align: center;
 }
 
-.play:hover {
+.play:hover,
+.pause:hover {
 	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #378de5), color-stop(1, #79bbff) );
 	background:-moz-linear-gradient( center top, #378de5 5%, #79bbff 100% );
 	background-color:#378de5;
 }
 
-.play:active {
+.play:active,
+.pause:active {
 	position:relative;
 	top:1px; left: 1px;
 }
@@ -61,4 +63,21 @@ body, html {
 }
 body {
     overflow: auto;
+}
+
+.grid{
+	width: 100%;
+	display: block;
+}
+.square{
+	width: 6%;
+	height: 50px;
+	background: #333;
+	border: solid 1px #FFF;
+	float: left;
+	border-radius: 50%;
+}
+.blink{
+	background: #F60;
+	border: solid 4px #FF0;
 }

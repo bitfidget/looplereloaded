@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width user-scalable=no">
     <title>Metronome</title>
     <link rel="stylesheet" href="css/main.css">
+    <script src="../js/vendor/jquery-2.1.1.js"></script>
     <script src="http://cwilso.github.io/AudioContext-MonkeyPatch/AudioContextMonkeyPatch.js"></script>
     <script src="js/metronome.js"></script>
   </head>
@@ -12,8 +13,27 @@
     <a href="https://github.com/cwilso/metronome" style="position: absolute; top: -5px; right: 15px;">Fork me on GitHub</a>
     <div id="controls">
       <div><a class="play" onclick="this.innerText = play();">play</a></div>
+      <div><a class="pause" onclick="this.innerText = pause();">pause</a></div>
       <div id="tempoBox">Tempo: <span id="showTempo">120</span>BPM <input id="tempo" type="range" min="30.0" max="160.0" step="1" value="120" style="height: 20px; width: 200px" onInput="tempo = event.target.value; document.getElementById('showTempo').innerText=tempo;"></div>
       <div>Resolution:<select onchange="noteResolution = this.selectedIndex;"><option>16th notes<option>8th notes<option>Quarter notes</select></div>
     </div>
+          <div id="grid">
+        <div class="square" id="sq-0"></div>
+        <div class="square" id="sq-1"></div>
+        <div class="square" id="sq-2"></div>
+        <div class="square" id="sq-3"></div>
+        <div class="square" id="sq-4"></div>
+        <div class="square" id="sq-5"></div>
+        <div class="square" id="sq-6"></div>
+        <div class="square" id="sq-7"></div>
+        <div class="square" id="sq-8"></div>
+        <div class="square" id="sq-9"></div>
+        <div class="square" id="sq-10"></div>
+        <div class="square" id="sq-11"></div>
+        <div class="square" id="sq-12"></div>
+        <div class="square" id="sq-13"></div>
+        <div class="square" id="sq-14"></div>
+        <div class="square" id="sq-15"></div>
+      </div>
    </body>
 </html>

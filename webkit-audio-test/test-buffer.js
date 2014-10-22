@@ -71,6 +71,9 @@ function init() {
     );
 
   bufferLoader.load();
+  loopObject.init();
+
+
 }
 
 function finishedLoading(bufferList) {
@@ -81,115 +84,224 @@ function finishedLoading(bufferList) {
 }
 
 
-var SampleLoop = {};
-SampleLoop.gainNode = null;
 
 
-SampleLoop.play = function() {
+// load the sounds we want
+var kick = BUFFERS[0];
+var snare = BUFFERS[1];
+var hihat = BUFFERS[2];
+var tom_1 = BUFFERS[3];
+var tom_2 = BUFFERS[4];
 
-  // introduce gain control
-  if (!context.createGain)
-    context.createGain = context.createGainNode;
-  this.gainNode = context.createGain();
+// timing variables
+var startTime, tempo, eighthNoteTime, isPlaying;
 
 
-  function playSounds(buffer, time) {
+var loopObject = {
+  init : function(){
+    console.log('init loop object');
+    // timing variables
+    tempo = 120; // BPM (beats per minute)
+    eighthNoteTime = (60 / tempo) / 2;
+  },
+  playSounds : function(buffer, time) {
+    console.log(isPlaying);
     source = context.createBufferSource();
     source.buffer = buffer;
     source.connect(context.destination);
-    source.start(time);
-  }
-
-  function playLoop() {
-    for (var bar = 0; bar < 1; bar++) {
+    source.start(time);  
+  },
+  loopStart : function() {
+    if (!isPlaying) {
+      isPlaying = true; 
+      startTime = context.currentTime
+      this.loopSteps();
+      this.loopTimer();
+    }
+  },
+  loopPause : function() {
+    console.log(context.currentTime)
+  },
+  loopStop : function() {
+    isPlaying = null;
+    console.log(isPlaying);
+    source.stop(0);
+  },
+  loopTimer : function() {
+    if (context.currentTime === (startTime + (8 * eighthNoteTime))){
+      console.log('YAAAARG')
+    }
+  },
+  loopSteps : function() {
+    
+    for (var bar = 0; bar < 4; bar++) {
       var time = startTime + bar * 8 * eighthNoteTime;
       
       // Play the bass (kick) drum on beats 1, 5
-      playSounds(kick, time);
-      playSounds(kick, time + 4 * eighthNoteTime);
+      this.playSounds(BUFFERS[0], time);
+      this.playSounds(BUFFERS[0], time + 4 * eighthNoteTime);
 
       // Play the snare drum on beats 3, 7
-      playSounds(snare, time + 2 * eighthNoteTime);
-      playSounds(snare, time + 6 * eighthNoteTime);
+      this.playSounds(BUFFERS[1], time + 2 * eighthNoteTime);
+      this.playSounds(BUFFERS[1], time + 6 * eighthNoteTime);
 
       // add toms
-      playSounds(tom_1, time + 5 * eighthNoteTime);
-      playSounds(tom_1, time + 7 * eighthNoteTime);
-      playSounds(tom_2, time + 6 * eighthNoteTime);
+      this.playSounds(BUFFERS[3], time + 5 * eighthNoteTime);
+      this.playSounds(BUFFERS[3], time + 7 * eighthNoteTime);
+      this.playSounds(BUFFERS[4], time + 6 * eighthNoteTime);
 
       // Play the hi-hat every eighth note.
       for (var i = 0; i < 8; ++i) {
-        playSounds(hihat, time + i * eighthNoteTime);
+        this.playSounds(BUFFERS[2], time + i * eighthNoteTime);
       }
+      console.log(bar)
     }
+    
   }
+}
 
-  // load the sounds we want
-  var kick = BUFFERS[0];
-  var snare = BUFFERS[1];
-  var hihat = BUFFERS[2];
-  var tom_1 = BUFFERS[3];
-  var tom_2 = BUFFERS[4];
+// function playLoop(time) {
+//   for (var bar = 0; bar < 1; bar++) {
+//     var time = startTime + bar * 8 * eighthNoteTime;
+    
+//     // Play the bass (kick) drum on beats 1, 5
+//     playSounds(kick, time);
+//     playSounds(kick, time + 4 * eighthNoteTime);
 
-  // timing variables
-  var startTime = context.currentTime;
-  var tempo = 120; // BPM (beats per minute)
-  var eighthNoteTime = (60 / tempo) / 2;
-};
+//     // Play the snare drum on beats 3, 7
+//     playSounds(snare, time + 2 * eighthNoteTime);
+//     playSounds(snare, time + 6 * eighthNoteTime);
 
-SampleLoop.stop = function() {
-  if (!this.source.stop)
-    this.source.stop = source.noteOff;
-  this.source.stop(0);
-};
+//     // add toms
+//     playSounds(tom_1, time + 5 * eighthNoteTime);
+//     playSounds(tom_1, time + 7 * eighthNoteTime);
+//     playSounds(tom_2, time + 6 * eighthNoteTime);
 
-SampleLoop.toggle = function() {
-  this.playing ? this.stop() : this.play();
-  this.playing = !this.playing;
-};
-
-
-
+//     // Play the hi-hat every eighth note.
+//     for (var i = 0; i < 8; ++i) {
+//       playSounds(hihat, time + i * eighthNoteTime);
+//     }
+//   }
+// }
 
 
-VolumeSample.play = function() {
-  if (!context.createGain)
-    context.createGain = context.createGainNode;
-  this.gainNode = context.createGain();
 
-  var source = context.createBufferSource();
-  source.buffer = BUFFERS.techno;
 
-  // Connect source to a gain node
-  source.connect(this.gainNode);
-  // Connect gain node to destination
-  this.gainNode.connect(context.destination);
-  // Start playback in a loop
-  source.loop = true;
-  if (!source.start)
-    source.start = source.noteOn;
-  source.start(0);
-  this.source = source;
-};
+// var SampleLoop = {};
+// SampleLoop.gainNode = null;
 
-VolumeSample.changeVolume = function(element) {
-  var volume = element.value;
-  var fraction = parseInt(element.value) / parseInt(element.max);
-  // Let's use an x*x curve (x-squared) since simple linear (x) does not
-  // sound as good.
-  this.gainNode.gain.value = fraction * fraction;
-};
 
-VolumeSample.stop = function() {
-  if (!this.source.stop)
-    this.source.stop = source.noteOff;
-  this.source.stop(0);
-};
+// SampleLoop.play = function() {
 
-VolumeSample.toggle = function() {
-  this.playing ? this.stop() : this.play();
-  this.playing = !this.playing;
-};
+//   // introduce gain control
+//   if (!context.createGain)
+//     context.createGain = context.createGainNode;
+//   this.gainNode = context.createGain();
+
+
+//   function playSounds(buffer, time) {
+//     source = context.createBufferSource();
+//     source.buffer = buffer;
+//     source.connect(context.destination);
+//     source.start(time);
+//   }
+
+//   function playLoop() {
+//     for (var bar = 0; bar < 1; bar++) {
+//       var time = startTime + bar * 8 * eighthNoteTime;
+      
+//       // Play the bass (kick) drum on beats 1, 5
+//       playSounds(kick, time);
+//       playSounds(kick, time + 4 * eighthNoteTime);
+
+//       // Play the snare drum on beats 3, 7
+//       playSounds(snare, time + 2 * eighthNoteTime);
+//       playSounds(snare, time + 6 * eighthNoteTime);
+
+//       // add toms
+//       playSounds(tom_1, time + 5 * eighthNoteTime);
+//       playSounds(tom_1, time + 7 * eighthNoteTime);
+//       playSounds(tom_2, time + 6 * eighthNoteTime);
+
+//       // Play the hi-hat every eighth note.
+//       for (var i = 0; i < 8; ++i) {
+//         playSounds(hihat, time + i * eighthNoteTime);
+//       }
+//     }
+//   }
+
+//   // load the sounds we want
+//   var kick = BUFFERS[0];
+//   var snare = BUFFERS[1];
+//   var hihat = BUFFERS[2];
+//   var tom_1 = BUFFERS[3];
+//   var tom_2 = BUFFERS[4];
+
+//   // timing variables
+//   var startTime = context.currentTime;
+//   var tempo = 120; // BPM (beats per minute)
+//   var eighthNoteTime = (60 / tempo) / 2;
+// };
+
+// SampleLoop.stop = function() {
+//   if (!this.source.stop)
+//     this.source.stop = source.noteOff;
+//   this.source.stop(0);
+// };
+
+// SampleLoop.toggle = function() {
+//   this.playing ? this.stop() : this.play();
+//   this.playing = !this.playing;
+// };
+
+
+
+
+
+
+
+
+
+
+
+// VolumeSample.play = function() {
+//   if (!context.createGain)
+//     context.createGain = context.createGainNode;
+//   this.gainNode = context.createGain();
+
+//   var source = context.createBufferSource();
+//   source.buffer = BUFFERS.techno;
+
+//   // Connect source to a gain node
+//   source.connect(this.gainNode);
+//   // Connect gain node to destination
+//   this.gainNode.connect(context.destination);
+//   // Start playback in a loop
+//   source.loop = true;
+//   if (!source.start)
+//     source.start = source.noteOn;
+//   source.start(0);
+//   this.source = source;
+// };
+
+// VolumeSample.changeVolume = function(element) {
+//   var volume = element.value;
+//   var fraction = parseInt(element.value) / parseInt(element.max);
+//   // Let's use an x*x curve (x-squared) since simple linear (x) does not
+//   // sound as good.
+//   this.gainNode.gain.value = fraction * fraction;
+// };
+
+// VolumeSample.stop = function() {
+//   if (!this.source.stop)
+//     this.source.stop = source.noteOff;
+//   this.source.stop(0);
+// };
+
+// VolumeSample.toggle = function() {
+//   this.playing ? this.stop() : this.play();
+//   this.playing = !this.playing;
+// };
 
 
 

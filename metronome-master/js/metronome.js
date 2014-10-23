@@ -30,11 +30,6 @@ function BufferLoader(context, urlList, callback) {
   this.loadCount = 0;
 }
 
-function finishedLoading(bufferList) {
-    console.log('loaded');
-    SOUNDS = bufferList;
-}
-
 BufferLoader.prototype.loadBuffer = function(url, index) {
   // Load buffer asynchronously
   var request = new XMLHttpRequest();
@@ -105,7 +100,7 @@ var SyncAudio = {
               '../sounds/Tom03.wav',
               '../sounds/sncf.wav',
             ],
-            finishedLoading
+            SyncAudio.finishedLoading
         );
 
         bufferLoader.load();
@@ -115,14 +110,96 @@ var SyncAudio = {
         timerWorker.onmessage = function(e) {
             if (e.data === "tick") {
                 console.log("tick!");
-                scheduler();
+                SyncAudio.scheduler();
             } else {
                 console.log("message: " + e.data);
             }
         };
         timerWorker.postMessage({"interval" : lookahead});
+    },
+    finishedLoading : function (bufferList) {
+        console.log('loaded');
+        SOUNDS = bufferList;
+    },
+    nextNote : function () {
+        // Advance current note and time by a 16th note...
+        var secondsPerBeat = 60.0 / tempo;    // Notice this picks up the CURRENT tempo value to calculate beat length.
+        nextNoteTime += 0.25 * secondsPerBeat;    // Add beat length to last beat time
+        current16thNote++;    // Advance the beat number, wrap to zero
+        if (current16thNote === 16) {
+            current16thNote = 0;
+        }
+    },
+    scheduleNote : function(beatNumber, time) {
+        // push the note on the queue, even if we're not playing.
+        notesInQueue.push( { note: beatNumber, time: time } );
+
+        if ( (noteResolution === 1) && (beatNumber % 2))
+            return; // we're not playing non-8th 16th notes
+        if ( (noteResolution === 2) && (beatNumber % 4))
+            return; // we're not playing non-quarter 8th notes
+
+        source = audioContext.createBufferSource();
+
+        // create an oscillator
+        // var osc = audioContext.createOscillator();
+        // osc.connect( audioContext.destination );
+        if (beatNumber % 16 === 0) {   // beat 0 == low pitch
+            source.buffer = SOUNDS[0];
+            // osc.frequency.value = 880.0;
+        } else if (beatNumber % 4 === 0 ) {   // quarter notes = medium pitch
+            source.buffer = SOUNDS[1];
+            // osc.frequency.value = 440.0;
+        } else {                 // other 16th notes = high pitch
+            source.buffer = SOUNDS[2];
+            //osc.frequency.value = 220.0;
+        }
+        if (beatNumber === 3) {
+            source.buffer = SOUNDS[5];
+        }
+
+        // osc.start( time );
+        // osc.stop( time + noteLength );
+        source.connect(audioContext.destination);
+        source.start(time);
+    },
+    scheduler : function () {
+        // while there are notes that will need to play before the next interval, schedule them and advance the pointer.
+        while (nextNoteTime < audioContext.currentTime + scheduleAheadTime ) {
+            SyncAudio.scheduleNote( current16thNote, nextNoteTime );
+            SyncAudio.nextNote();
+        }
+    },
+    play : function () {
+        isPlaying = !isPlaying;
+        isPaused = false;
+
+        if (isPlaying) { // start playing
+            current16thNote = 0;
+            nextNoteTime = audioContext.currentTime;
+            timerWorker.postMessage("start");
+            return "stop";
+        } else {
+            timerWorker.postMessage("stop");
+            return "play";
+        }
+    },
+    pause : function () {
+        isPaused = !isPaused;
+
+        if (!isPaused) { // start playing
+            //current16thNote = 0;
+            nextNoteTime = audioContext.currentTime;
+            timerWorker.postMessage("start");
+            return "pause";
+        } else {
+            timerWorker.postMessage("stop");
+            return "resume";
+        }
     }
-}
+};
+
+
 
 
 var SyncVisual = {
@@ -187,100 +264,6 @@ var SyncVisual = {
 
 
     
-
-
-function nextNote() {
-    // Advance current note and time by a 16th note...
-    var secondsPerBeat = 60.0 / tempo;    // Notice this picks up the CURRENT tempo value to calculate beat length.
-    nextNoteTime += 0.25 * secondsPerBeat;    // Add beat length to last beat time
-    current16thNote++;    // Advance the beat number, wrap to zero
-    if (current16thNote === 16) {
-        current16thNote = 0;
-    }
-}
-
-function scheduleNote( beatNumber, time ) {
-    // push the note on the queue, even if we're not playing.
-    notesInQueue.push( { note: beatNumber, time: time } );
-
-    if ( (noteResolution === 1) && (beatNumber % 2))
-        return; // we're not playing non-8th 16th notes
-    if ( (noteResolution === 2) && (beatNumber % 4))
-        return; // we're not playing non-quarter 8th notes
-
-    source = audioContext.createBufferSource();
-
-
-    // create an oscillator
-    // var osc = audioContext.createOscillator();
-    // osc.connect( audioContext.destination );
-    if (beatNumber % 16 === 0) {   // beat 0 == low pitch
-        source.buffer = SOUNDS[0];
-        // osc.frequency.value = 880.0;
-    } else if (beatNumber % 4 === 0 ) {   // quarter notes = medium pitch
-        source.buffer = SOUNDS[1];
-        // osc.frequency.value = 440.0;
-    } else {                 // other 16th notes = high pitch
-        source.buffer = SOUNDS[2];
-        //osc.frequency.value = 220.0;
-    }
-    if (beatNumber === 3) {
-        source.buffer = SOUNDS[5];
-    }
-
-    // osc.start( time );
-    // osc.stop( time + noteLength );
-    source.connect(audioContext.destination);
-    source.start(time);
-}
-
-
-function scheduler() {
-    // while there are notes that will need to play before the next interval, schedule them and advance the pointer.
-    while (nextNoteTime < audioContext.currentTime + scheduleAheadTime ) {
-        scheduleNote( current16thNote, nextNoteTime );
-        nextNote();
-    }
-}
-
-
-function play() {
-    isPlaying = !isPlaying;
-    isPaused = false;
-
-    if (isPlaying) { // start playing
-        current16thNote = 0;
-        nextNoteTime = audioContext.currentTime;
-        timerWorker.postMessage("start");
-        return "stop";
-    } else {
-        timerWorker.postMessage("stop");
-        return "play";
-    }
-    
-}
-
-
-function pause() {
-    isPaused = !isPaused;
-
-    if (!isPaused) { // start playing
-        //current16thNote = 0;
-        nextNoteTime = audioContext.currentTime;
-        timerWorker.postMessage("start");
-        return "pause";
-    } else {
-        timerWorker.postMessage("stop");
-        return "resume";
-    }
-}
-
-
-
-
-
-
-
 
 
 

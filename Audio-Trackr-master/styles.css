@@ -1,0 +1,198 @@
+html {
+	height: 100%;
+	background-color: #333;
+}
+body {
+	margin: 0;
+	background-color: #222;
+	color: #AAA;
+	overflow-y: scroll;
+	font-family: Avenir, Futura, "Century Gothic", sans-serif;
+	-webkit-text-size-adjust: none;
+}
+
+a {
+	color: #4593C7;
+	
+}
+a:hover {
+	text-decoration: underline;
+}
+
+img {
+	vertical-align: middle;
+}
+
+button {
+	background-color: #4387B4;
+	padding: 4px 13px 3px;
+	color: #fff;
+	font-size: 17px;
+	border: 0 none;
+	cursor: pointer;
+}
+button:hover {
+	background-color: #5C98C0;
+}
+button[disabled] {
+	opacity: 0.4;
+	color: #CCC;
+}
+
+
+
+
+header {
+	background-color: #333;
+	padding: 15px;
+}
+header h1 {
+	display: inline;
+	color: #4593C7;
+	font-weight: normal;
+	line-height: 1em;
+}
+header a {
+	float: right;
+	margin-top: 6px;
+	font-size: 18px;
+}
+
+@media (max-width:400px) {
+	header h1 {
+		display: block;
+		margin: 0 0 0.1em;
+	}
+	header a {
+		float: none;
+	}
+}
+
+footer {
+	margin-top: 2em;
+	background-color: #333;
+	padding: 1em 15px 3em;
+}
+
+.error {
+	margin: 15px;
+	padding: 15px;
+	background-color: #422;
+	border: 1px solid #300;
+}
+
+
+
+.songs {
+	padding: 8px 5px;
+}
+.songs span {
+	display: inline-block;
+}
+.songs label {
+	display: inline-block;
+	margin: 5px 10px;
+	border: 1px solid #888;
+	border-radius: 4px;
+	padding: 3px 6px;
+	cursor: pointer;
+}
+.songs span:last-child label {
+	margin-right: 0;
+}
+.songs input:focus + label {
+	box-shadow: 0 0 0 1px #ddd;
+}
+.songs input:checked + label {
+	background-color: #EEE;
+	border-color: #EEE;
+	color: #050505;
+}
+.songs input {
+	position: absolute;
+	top: -20px;
+}
+
+
+
+.controls {
+	padding: 0px 15px 10px;
+	line-height: 2.5em;
+}
+.controls h2 {
+	margin: 0 1.5em 0 0;
+	color: #EEE;
+	display: inline-block;
+}
+.controls > div {
+	text-align: center;
+}
+.controls button {
+	margin:0 1.5em 0 0;
+}
+
+
+
+.track-container {
+	margin: 2em 5px;
+	min-height: 400px;
+}
+
+.track {
+	display: inline-block;
+	position: relative;
+	margin: 0 10px 30px;
+}
+.track h2 {
+	margin: 0 0 4px;
+	font-size: 14px;
+}
+.track input[type="range"] {
+	position: absolute;
+	right: 0;
+	top: 5px;
+	height: 4px;
+	margin: 0;
+	width: 130px;
+}
+.track input[type='range'] {
+	-webkit-appearance: none !important;
+	background: #666;
+	height: 7px;
+}
+.track input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none !important;
+	background: #888;
+	height: 15px;
+	width: 15px;
+	border-radius: 50%;
+}
+
+.track canvas {
+	background-color: #333;
+	border: 1px solid #4F4F4F;
+	vertical-align: middle;
+}
+
+.track .spinner {
+	height: 40px;
+	width: 40px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin: -25px 0 0 -25px;
+	-webkit-animation: spinner-frames .5s infinite linear;
+			animation: spinner-frames .5s infinite linear;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #B6D6FF transparent transparent;
+	border-radius: 50%;
+}
+@-webkit-keyframes spinner-frames {
+	from { -webkit-transform: rotate(0deg); }
+	to { -webkit-transform: rotate(359deg); }
+}
+@keyframes spinner-frames {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(359deg); }
+}

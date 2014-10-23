@@ -30,6 +30,11 @@ function BufferLoader(context, urlList, callback) {
   this.loadCount = 0;
 }
 
+function finishedLoading(bufferList) {
+    console.log('loaded');
+    SOUNDS = bufferList;
+}
+
 BufferLoader.prototype.loadBuffer = function(url, index) {
   // Load buffer asynchronously
   var request = new XMLHttpRequest();
@@ -70,7 +75,6 @@ BufferLoader.prototype.load = function() {
 }
 
 
-
 // the requestAnimationFrame API, with a setTimeout fallback
 
 window.requestAnimFrame = (function() {
@@ -83,6 +87,107 @@ window.requestAnimFrame = (function() {
         window.setTimeout(callback, 1000 / 60);
     };
 })();
+
+
+var SyncAudio = {
+    init : function() {
+        console.log('initializing/loading audio');
+
+        audioContext = audioContext || new AudioContext();
+
+        bufferLoader = new BufferLoader(
+            audioContext,
+            [
+              '../sounds/Kick16.wav',
+              '../sounds/Snare06.wav',
+              '../sounds/Tom02.wav',
+              '../sounds/OpenHat09.wav',
+              '../sounds/Tom03.wav',
+              '../sounds/sncf.wav',
+            ],
+            finishedLoading
+        );
+
+        bufferLoader.load();
+
+        timerWorker = new Worker("js/metronomeworker.js");
+
+        timerWorker.onmessage = function(e) {
+            if (e.data === "tick") {
+                console.log("tick!");
+                scheduler();
+            } else {
+                console.log("message: " + e.data);
+            }
+        };
+        timerWorker.postMessage({"interval" : lookahead});
+    }
+}
+
+
+var SyncVisual = {
+    init : function() {
+        console.log('initializing/loading visuals');
+
+        var container = document.createElement( 'div' );
+        container.className = "container";
+        canvas = document.createElement( 'canvas' );
+        canvasContext = canvas.getContext( '2d' );
+        canvas.width = window.innerWidth; 
+        canvas.height = window.innerHeight; 
+        document.body.appendChild( container );
+        container.appendChild(canvas);    
+        canvasContext.strokeStyle = "#ffffff";
+        canvasContext.lineWidth = 2;
+
+        window.onorientationchange = this.resetCanvas;
+        window.onresize = this.resetCanvas;
+
+        requestAnimFrame(SyncVisual.draw); // start the drawing loop.
+    },
+    resetCanvas : function(e) {
+        // will need to adjust this to allow for navigation
+        console.log('resizing canvas')
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        window.scrollTo(0,0); 
+    },
+    draw : function() {
+        var currentNote = last16thNoteDrawn;
+        var currentTime = audioContext.currentTime;
+
+        console.log(currentNote);
+
+        // this accesses the css/div grid
+        $('.blink').removeClass('blink');
+        $('#sq-' + currentNote).addClass('blink');
+
+        // this is common accross audo/visual?
+        while (notesInQueue.length && notesInQueue[0].time < currentTime) {
+            currentNote = notesInQueue[0].note;
+            notesInQueue.splice(0,1);   // remove note from queue
+        }
+
+        // We only need to draw if the note has moved.
+        if (last16thNoteDrawn !== currentNote) {
+            var x = Math.floor( canvas.width / 16 );
+            canvasContext.clearRect(0,0,canvas.width, canvas.height); 
+            for (var i = 0; i < 16; i++) {
+                canvasContext.fillStyle = ( currentNote === i ) ? 
+                    ((currentNote % 4 === 0)?"red":"blue") : "grey";
+                canvasContext.fillRect( x * (i), 0, x, x);
+            }
+            last16thNoteDrawn = currentNote;
+        }
+        requestAnimFrame(SyncVisual.draw);
+    }
+}
+
+
+
+
+    
+
 
 function nextNote() {
     // Advance current note and time by a 16th note...
@@ -171,51 +276,13 @@ function pause() {
 }
 
 
-function resetCanvas (e) {
-    // resize the canvas - but remember - this clears the canvas too.
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    //make sure we scroll to the top left.
-    window.scrollTo(0,0); 
-}
 
 
-function draw() {
-    var currentNote = last16thNoteDrawn;
-    var currentTime = audioContext.currentTime;
-
-    console.log(currentNote);
-
-    $('.blink').removeClass('blink');
-    $('#sq-' + currentNote).addClass('blink');
-
-    while (notesInQueue.length && notesInQueue[0].time < currentTime) {
-        currentNote = notesInQueue[0].note;
-        notesInQueue.splice(0,1);   // remove note from queue
-    }
-
-    // We only need to draw if the note has moved.
-    if (last16thNoteDrawn !== currentNote) {
-        var x = Math.floor( canvas.width / 18 );
-        canvasContext.clearRect(0,0,canvas.width, canvas.height); 
-        for (var i = 0; i < 16; i++) {
-            canvasContext.fillStyle = ( currentNote === i ) ? 
-                ((currentNote % 4 === 0)?"red":"blue") : "black";
-            canvasContext.fillRect( x * (i + 1), x, x / 2, x / 2 );
-        }
-        last16thNoteDrawn = currentNote;
-    }
-
-    // set up to draw again
-    requestAnimFrame(draw);
-}
 
 
-function finishedLoading(bufferList) {
-    console.log('loaded');
-    SOUNDS = bufferList;
-}
+
+
+
 
 
 function init() {
@@ -275,5 +342,6 @@ function init() {
     timerWorker.postMessage({"interval":lookahead});
 }
 
-window.addEventListener("load", init );
+window.addEventListener("load", SyncAudio.init);
+window.addEventListener("load", SyncVisual.init);
 

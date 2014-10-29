@@ -134,34 +134,69 @@ var SyncAudio = {
         // push the note on the queue, even if we're not playing.
         notesInQueue.push( { note: beatNumber, time: time } );
 
-        if ( (noteResolution === 1) && (beatNumber % 2))
-            return; // we're not playing non-8th 16th notes
-        if ( (noteResolution === 2) && (beatNumber % 4))
-            return; // we're not playing non-quarter 8th notes
+        // resolution filter
+        if ((noteResolution === 1) && (beatNumber % 2)) {
+            return;
+        }
+        if ((noteResolution === 2) && (beatNumber % 4)) {
+            return;
+        }
 
+        
+            
         source = audioContext.createBufferSource();
 
         // create an oscillator
         // var osc = audioContext.createOscillator();
         // osc.connect( audioContext.destination );
-        if (beatNumber % 16 === 0) {   // beat 0 == low pitch
-            source.buffer = SOUNDS[0];
-            // osc.frequency.value = 880.0;
-        } else if (beatNumber % 4 === 0 ) {   // quarter notes = medium pitch
-            source.buffer = SOUNDS[1];
-            // osc.frequency.value = 440.0;
-        } else {                 // other 16th notes = high pitch
-            source.buffer = SOUNDS[2];
-            //osc.frequency.value = 220.0;
-        }
-        if (beatNumber === 3) {
-            source.buffer = SOUNDS[5];
+        // if (beatNumber % 16 === 0) {   // beat 0 == low pitch
+        //     source.buffer = SOUNDS[0];
+        //     // osc.frequency.value = 880.0;
+        // } else if (beatNumber % 4 === 0 ) {   // quarter notes = medium pitch
+        //     source.buffer = SOUNDS[1];
+        //     // osc.frequency.value = 440.0;
+        // } else {                 // other 16th notes = high pitch
+        //     source.buffer = SOUNDS[2];
+        //     //osc.frequency.value = 220.0;
+        // }
+        // if (beatNumber === 3) {
+        //     source.buffer = SOUNDS[5];
+        // }
+        if (beatNumber === 1) {
+            var source1
+            source1 = audioContext.createBufferSource();
+            source1.buffer = SOUNDS[2];
+            source1.connect(audioContext.destination);
+            source1.start(time);
+
+            var source2
+            source2 = audioContext.createBufferSource();
+            source2.buffer = SOUNDS[1];
+            source2.connect(audioContext.destination);
+            source2.start(time);
+
+            var source3
+            source3 = audioContext.createBufferSource();
+            source3.buffer = SOUNDS[2];
+            source3.connect(audioContext.destination);
+            source3.start(time);
+
+            source = audioContext.createBufferSource();
+            source.buffer = SOUNDS[3];
+            source.connect(audioContext.destination);
+            source.start(time);
+
+            source = audioContext.createBufferSource();
+            source.buffer = SOUNDS[4];
+            source.connect(audioContext.destination);
+            source.start(time);
+
         }
 
         // osc.start( time );
         // osc.stop( time + noteLength );
-        source.connect(audioContext.destination);
-        source.start(time);
+        // source.connect(audioContext.destination);
+        // source.start(time);
     },
     scheduler : function () {
         // while there are notes that will need to play before the next interval, schedule them and advance the pointer.
